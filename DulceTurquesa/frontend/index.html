@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dulce Turquesa | Panaderia</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" v-cloak>
+    <section v-if="!token" class="login-page">
+      <div class="login-visual">
+        <p class="eyebrow">Panaderia artesanal</p>
+        <h1>Dulce Turquesa</h1>
+        <p>Gestion elegante para ventas, productos, inventario, usuarios y reportes.</p>
+        <div class="dessert-strip" aria-label="Postres y cafe">
+          <span class="dessert-img dessert-one"></span>
+          <span class="dessert-img dessert-two"></span>
+          <span class="dessert-img dessert-three"></span>
+        </div>
+      </div>
+
+      <form class="login-card" @submit.prevent="login">
+        <span class="brand-mark">D</span>
+        <h2>Iniciar sesion</h2>
+        <label>
+          Correo
+          <input v-model.trim="loginForm.email" type="email" required placeholder="admin@dulceturquesa.com">
+        </label>
+        <label>
+          Contrasena
+          <input v-model="loginForm.password" type="password" required minlength="8" placeholder="Admin12345">
+        </label>
+        <p v-if="error" class="error">{{ error }}</p>
+        <button class="button" type="submit">Entrar</button>
+        <div class="credential-list">
+          <button v-for="credential in credentials" :key="credential.email" type="button" @click="useCredential(credential)">
+            <strong>{{ credential.role }}</strong>
+            <span>{{ credential.email }}</span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section v-else class="layout" :class="roleClass">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">D</span>
+          <div>
+            <strong>Dulce Turquesa</strong>
+            <small>{{ currentUser?.role || 'usuario' }}</small>
+          </div>
+        </div>
+        <nav>
+          <button v-for="item in menu" :key="item.id" :class="{ active: view === item.id }" @click="view = item.id">
+            {{ item.label }}
+          </button>
+        </nav>
+        <button class="ghost" @click="logout">Cerrar sesion</button>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Sistema de gestion</p>
+            <h1>{{ activeTitle }}</h1>
+          </div>
+          <button class="button secondary" @click="loadAll">Actualizar</button>
+        </header>
+
+        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="message" class="success">{{ message }}</p>
+
+        <section v-if="view === 'dashboard'" class="dashboard">
+          <article class="role-hero" :style="{ backgroundImage: `linear-gradient(90deg, rgba(5, 63, 64, 0.88), rgba(0, 125, 122, 0.26)), url('${rolePanel.image}')` }">
+            <div>
+              <span>{{ role }}</span>
+              <h2>{{ rolePanel.title }}</h2>
+              <p>{{ rolePanel.text }}</p>
+            </div>
+          </article>
+
+          <div class="cards">
+            <article class="card card-dessert">
+              <span>Productos</span>
+              <strong>{{ report.products }}</strong>
+            </article>
+            <article class="card card-coffee">
+              <span>Ventas</span>
+              <strong>${{ money(report.sales_total) }}</strong>
+            </article>
+            <article class="card card-bread">
+              <span>Pedidos</span>
+              <strong>{{ report.orders }}</strong>
+            </article>
+            <article class="card warn card-pastry">
+              <span>{{ role === 'cliente' ? 'Carrito' : 'Inventario bajo' }}</span>
+              <strong>{{ role === 'cliente' ? cartCount : report.low_stock_ingredients }}</strong>
+            </article>
+          </div>
+
+          <div class="menu-preview" aria-label="Menu destacado">
+            <article>
+              <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=700&q=85" alt="Postre cremoso">
+              <div>
+                <span>Postres</span>
+                <strong>Tartas y pasteles</strong>
+              </div>
+            </article>
+            <article>
+              <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=700&q=85" alt="Cafe servido">
+              <div>
+                <span>Cafes</span>
+                <strong>Lattes y espresso</strong>
+              </div>
+            </article>
+            <article>
+              <img src="https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=700&q=85" alt="Pan recien horneado">
+              <div>
+                <span>Panaderia</span>
+                <strong>Pan dulce artesanal</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section v-if="view === 'users'" class="workspace">
+          <form class="form-panel" @submit.prevent="createUser">
+            <h2>Nuevo usuario</h2>
+            <input v-model.trim="userForm.name" required minlength="3" placeholder="Nombre completo">
+            <input v-model.trim="userForm.email" required type="email" placeholder="correo@ejemplo.com">
+            <input v-model="userForm.password" required minlength="8" placeholder="Contrasena con mayuscula y numero">
+            <select v-model="userForm.role" required>
+              <option value="admin">Admin</option>
+              <option value="encargado">Encargado</option>
+              <option value="vendedor">Vendedor</option>
+              <option value="cliente">Cliente</option>
+            </select>
+            <button class="button" type="submit">Guardar usuario</button>
+          </form>
+          <div class="table-card">
+            <h2>Usuarios</h2>
+            <table>
+              <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Activo</th></tr></thead>
+              <tbody>
+                <tr v-for="user in users" :key="user.id">
+                  <td>{{ user.name }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.role }}</td>
+                  <td>{{ user.is_active ? 'Si' : 'No' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section v-if="view === 'products'" class="workspace">
+          <form class="form-panel" @submit.prevent="createProduct">
+            <h2>Nuevo producto</h2>
+            <input v-model.trim="productForm.name" required minlength="2" placeholder="Nombre">
+            <input v-model.trim="productForm.category" required minlength="2" placeholder="Categoria">
+            <input v-model.number="productForm.price" required type="number" min="0.01" step="0.01" placeholder="Precio">
+            <input v-model.number="productForm.stock" required type="number" min="0" step="1" placeholder="Stock">
+            <textarea v-model.trim="productForm.description" maxlength="600" placeholder="Descripcion"></textarea>
+            <button class="button" type="submit">Guardar producto</button>
+          </form>
+          <div class="table-card">
+            <h2>Catalogo</h2>
+            <table>
+              <thead><tr><th>Producto</th><th>Categoria</th><th>Precio</th><th>Stock</th></tr></thead>
+              <tbody>
+                <tr v-for="product in products" :key="product.id">
+                  <td>{{ product.name }}</td>
+                  <td>{{ product.category }}</td>
+                  <td>${{ money(product.price) }}</td>
+                  <td>{{ product.stock }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section v-if="view === 'shop'" class="shop-grid">
+          <article v-for="product in activeProducts" :key="product.id" class="shop-card">
+            <div class="shop-photo"></div>
+            <div>
+              <span>{{ product.category }}</span>
+              <h2>{{ product.name }}</h2>
+              <p>{{ product.description || 'Producto artesanal de Dulce Turquesa.' }}</p>
+              <strong>${{ money(product.price) }}</strong>
+              <button class="button" type="button" @click="addToCart(product)">Agregar al carrito</button>
+            </div>
+          </article>
+        </section>
+
+        <section v-if="view === 'cart'" class="cart-panel">
+          <div class="table-card">
+            <h2>Carrito</h2>
+            <p v-if="!cart.length" class="muted">Tu carrito esta vacio.</p>
+            <table v-else>
+              <thead><tr><th>Producto</th><th>Precio</th><th>Cantidad</th><th>Subtotal</th><th></th></tr></thead>
+              <tbody>
+                <tr v-for="item in cart" :key="item.id">
+                  <td>{{ item.name }}</td>
+                  <td>${{ money(item.price) }}</td>
+                  <td>
+                    <input class="qty-input" :value="item.quantity" type="number" min="1" :max="item.stock" @input="updateCartQuantity(item, $event.target.value)">
+                  </td>
+                  <td>${{ money(Number(item.price) * Number(item.quantity)) }}</td>
+                  <td><button class="ghost small" type="button" @click="removeFromCart(item)">Quitar</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <aside class="checkout-card">
+            <span>Total</span>
+            <strong>${{ money(cartTotal) }}</strong>
+            <button class="button" type="button" @click="checkoutCart">Enviar pedido</button>
+          </aside>
+        </section>
+
+        <section v-if="view === 'clientOrders'" class="table-card">
+          <h2>Mis pedidos</h2>
+          <p v-if="!orders.length" class="muted">Todavia no tienes pedidos registrados.</p>
+          <table v-else>
+            <thead><tr><th>Pedido</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <tbody>
+              <tr v-for="order in orders" :key="order.id">
+                <td>#{{ order.id }}</td>
+                <td>${{ money(order.total) }}</td>
+                <td>{{ order.status }}</td>
+                <td>{{ date(order.created_at) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section v-if="view === 'orders'" class="workspace">
+          <form class="form-panel" @submit.prevent="createOrder">
+            <h2>Nueva venta</h2>
+            <input v-model.trim="orderForm.customer_name" required minlength="3" placeholder="Cliente">
+            <select v-model.number="orderForm.product_id" required>
+              <option disabled value="">Selecciona producto</option>
+              <option v-for="product in activeProducts" :key="product.id" :value="product.id">
+                {{ product.name }} - ${{ money(product.price) }}
+              </option>
+            </select>
+            <input v-model.number="orderForm.quantity" required type="number" min="1" max="500" placeholder="Cantidad">
+            <button class="button" type="submit">Registrar venta</button>
+          </form>
+          <div class="table-card">
+            <h2>Pedidos</h2>
+            <table>
+              <thead><tr><th>Cliente</th><th>Total</th><th>Estado</th><th>Fecha</th></tr></thead>
+              <tbody>
+                <tr v-for="order in orders" :key="order.id">
+                  <td>{{ order.customer_name }}</td>
+                  <td>${{ money(order.total) }}</td>
+                  <td>{{ order.status }}</td>
+                  <td>{{ date(order.created_at) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section v-if="view === 'inventory'" class="workspace">
+          <form class="form-panel" @submit.prevent="createIngredient">
+            <h2>Nuevo ingrediente</h2>
+            <input v-model.trim="ingredientForm.name" required minlength="2" placeholder="Ingrediente">
+            <input v-model.trim="ingredientForm.unit" required placeholder="Unidad: kg, pz, l">
+            <input v-model.number="ingredientForm.minimum_stock" required type="number" min="0" step="0.01" placeholder="Stock minimo">
+            <input v-model.number="ingredientForm.current_stock" required type="number" min="0" step="0.01" placeholder="Stock actual">
+            <button class="button" type="submit">Guardar ingrediente</button>
+          </form>
+          <div class="table-card">
+            <h2>Inventario</h2>
+            <table>
+              <thead><tr><th>Ingrediente</th><th>Unidad</th><th>Minimo</th><th>Actual</th></tr></thead>
+              <tbody>
+                <tr v-for="ingredient in ingredients" :key="ingredient.id" :class="{ danger: Number(ingredient.current_stock) <= Number(ingredient.minimum_stock) }">
+                  <td>{{ ingredient.name }}</td>
+                  <td>{{ ingredient.unit }}</td>
+                  <td>{{ ingredient.minimum_stock }}</td>
+                  <td>{{ ingredient.current_stock }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section v-if="view === 'reports'" class="report-panel">
+          <h2>Resumen general</h2>
+          <p>Ventas acumuladas: <strong>${{ money(report.sales_total) }}</strong></p>
+          <p>Usuarios activos: <strong>{{ report.active_users }}</strong></p>
+          <p>Ingredientes en alerta: <strong>{{ report.low_stock_ingredients }}</strong></p>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

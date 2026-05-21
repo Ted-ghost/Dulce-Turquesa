@@ -1,0 +1,135 @@
+DULCE TURQUESA - ESTRUCTURA POR CARPETAS
+
+DulceTurquesa/
+|
+|-- backend/
+|   |
+|   |-- app/
+|   |   |
+|   |   |-- controllers/
+|   |   |   |-- auth.py
+|   |   |   |-- users.py
+|   |   |   |-- products.py
+|   |   |   |-- orders.py
+|   |   |   |-- inventory.py
+|   |   |   `-- reports.py
+|   |   |
+|   |   |-- services/
+|   |   |   `-- __init__.py
+|   |   |
+|   |   |-- middleware/
+|   |   |   `-- __init__.py
+|   |   |
+|   |   |-- utils/
+|   |   |   `-- __init__.py
+|   |   |
+|   |   |-- main.py
+|   |   |-- config.py
+|   |   |-- database.py
+|   |   |-- dependencies.py
+|   |   |-- models.py
+|   |   |-- schemas.py
+|   |   |-- security.py
+|   |   `-- seed.py
+|   |
+|   `-- __init__.py
+|
+|-- frontend/
+|   |
+|   |-- index.html
+|   |-- app.js
+|   |-- styles.css
+|   |
+|   `-- assets/
+|       |-- images/
+|       `-- fonts/
+|
+|-- config/
+|   |-- .env
+|   |-- .env.example
+|   `-- database.sql
+|
+|-- docs/
+|   |-- README.md
+|   |-- STRUCTURE.md
+|   `-- ESTRUCTURA_CARPETAS.txt
+|
+|-- scripts/
+|   |-- run.cmd
+|   `-- run.sh
+|
+|-- tests/
+|   `-- smoke_test.py
+|
+|-- requirements.txt
+|-- .gitignore
+`-- .editorconfig
+
+
+CAPAS DEL PROYECTO
+
+1. Vista
+   Carpeta: frontend/
+   Archivos:
+   - index.html
+   - app.js
+   - styles.css
+
+2. Controladores
+   Carpeta: backend/app/controllers/
+   Archivos:
+   - auth.py
+   - users.py
+   - products.py
+   - orders.py
+   - inventory.py
+   - reports.py
+
+3. Modelo / Base de datos
+   Archivos:
+   - backend/app/models.py
+   - backend/app/database.py
+   - config/database.sql
+
+4. Validaciones
+   Archivo:
+   - backend/app/schemas.py
+
+5. Seguridad
+   Archivos:
+   - backend/app/security.py
+   - backend/app/dependencies.py
+
+6. Datos iniciales
+   Archivo:
+   - backend/app/seed.py
+
+
+TECNOLOGIA
+
+- Backend: FastAPI
+- Frontend: Vue desde CDN, sin package.json
+- Base de datos: SQL Server
+- ORM: SQLAlchemy
+- Login: JWT
+
+
+ROLES
+
+- Admin
+- Encargado
+- Vendedor
+- Cliente
+
+
+MODULOS
+
+- Login
+- Gestion de usuarios
+- Productos / Catalogo
+- Pedidos / Ventas
+- Inventario / Ingredientes
+- Reportes
+- Catalogo para cliente
+- Carrito
+- Mis pedidos

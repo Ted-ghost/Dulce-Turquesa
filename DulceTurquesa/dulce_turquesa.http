@@ -1,0 +1,163 @@
+# ============================================================
+#  Dulce Turquesa - API Tests (REST Client para VS Code)
+#  Instala la extensión: humao.rest-client
+#  Uso: haz clic en "Send Request" sobre cada bloque
+# ============================================================
+
+@base = http://127.0.0.1:8000/api
+
+# ── Cambia este token tras hacer login ──────────────────────
+@token = PEGA_TU_TOKEN_AQUI
+
+
+# ============================================================
+#  AUTH
+# ============================================================
+
+### Login - Admin
+# @name loginAdmin
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@dulceturquesa.com",
+  "password": "Admin12345"
+}
+
+###
+
+### Login - Encargado
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "encargado@dulceturquesa.com",
+  "password": "Encargado123"
+}
+
+###
+
+### Login - Vendedor
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "vendedor@dulceturquesa.com",
+  "password": "Vendedor123"
+}
+
+###
+
+### Login - Cliente
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "cliente@dulceturquesa.com",
+  "password": "Cliente123"
+}
+
+
+# ============================================================
+#  USUARIOS  (solo admin)
+# ============================================================
+
+### Listar usuarios
+GET {{base}}/users
+Authorization: Bearer {{token}}
+
+###
+
+### Crear usuario
+POST {{base}}/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Nuevo Vendedor",
+  "email": "nuevo@dulceturquesa.com",
+  "password": "Vendedor123",
+  "role": "vendedor",
+  "is_active": true
+}
+
+
+# ============================================================
+#  PRODUCTOS
+# ============================================================
+
+### Listar productos
+GET {{base}}/products
+Authorization: Bearer {{token}}
+
+###
+
+### Crear producto
+POST {{base}}/products
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Muffin de arandanos",
+  "category": "Pan dulce",
+  "price": 28.00,
+  "stock": 20,
+  "description": "Muffin esponjoso con arandanos frescos.",
+  "is_active": true
+}
+
+
+# ============================================================
+#  PEDIDOS / VENTAS
+# ============================================================
+
+### Listar pedidos
+GET {{base}}/orders
+Authorization: Bearer {{token}}
+
+###
+
+### Crear pedido (vendedor o cliente)
+POST {{base}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "customer_name": "María López",
+  "items": [
+    { "product_id": 1, "quantity": 2 },
+    { "product_id": 4, "quantity": 1 }
+  ]
+}
+
+
+# ============================================================
+#  INVENTARIO / INGREDIENTES
+# ============================================================
+
+### Listar ingredientes
+GET {{base}}/inventory
+Authorization: Bearer {{token}}
+
+###
+
+### Crear ingrediente
+POST {{base}}/inventory
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Canela",
+  "unit": "kg",
+  "minimum_stock": 0.5,
+  "current_stock": 1.2
+}
+
+
+# ============================================================
+#  REPORTES
+# ============================================================
+
+### Resumen general
+GET {{base}}/reports/summary
+Authorization: Bearer {{token}}
